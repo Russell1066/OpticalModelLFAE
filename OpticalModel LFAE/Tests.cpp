@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "ClosePackCenters.h"
 #include "VectorMath.h"
 #include "tests.h"
 
@@ -12,6 +13,7 @@ bool RunTests()
     assert(TestNorm());
     assert(TestRotate3d());
     assert(TestPointPlaneNormalDistance());
+    assert(TestClosePackCenters());
 
     return true;
 }
@@ -87,10 +89,19 @@ bool TestPointPlaneNormalDistance()
 {
     bool passed = true;
 
-    passed == passed && ApproximatelyZero(PointPlaneNormalDistance(FloatPoint(0, 0, 5), FloatVector(0, 0, 0), FloatPoint(0, 0, 0)));
+    passed = passed && ApproximatelyZero(PointPlaneNormalDistance(FloatPoint(0, 0, 5), FloatVector(0, 0, 0), FloatPoint(0, 0, 0)));
     passed = passed && ApproximatelyEqual(PointPlaneNormalDistance(FloatPoint(0, 0, 5), FloatVector(0, 0, 1), FloatPoint(0, 0, 0)), 5.f);
     passed = passed && ApproximatelyZero(PointPlaneNormalDistance(FloatPoint(0, 1, 0), FloatVector(0, 0, 1), FloatPoint(0, 0, 0)));
     passed = passed && ApproximatelyEqual(PointPlaneNormalDistance(FloatPoint(0, 0, 5), FloatVector(0, 0, -1), FloatPoint(0, 0, 0)), -5.f);
+
+    return passed;
+}
+
+bool TestClosePackCenters()
+{
+    bool passed = true;
+
+    auto centers = ClosePackCenters<float>(4, 10);
 
     return passed;
 }
