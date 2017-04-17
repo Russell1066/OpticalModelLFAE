@@ -56,7 +56,7 @@ namespace VectorMath
 
         N = N / norm;
 
-        return DotProduct(n, Q) - DotProduct(n, P);
+        return DotProduct(N, Q) - DotProduct(N, P);
     }
 
     // calculates the distance D from a point Q to a plane that contains the

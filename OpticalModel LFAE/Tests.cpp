@@ -11,6 +11,7 @@ bool RunTests()
     assert(TestDotProduct());
     assert(TestNorm());
     assert(TestRotate3d());
+    assert(TestPointPlaneNormalDistance());
 
     return true;
 }
@@ -61,6 +62,8 @@ bool TestNorm()
     passed = passed && ApproximatelyEqual(x.Norm(), 1.f);
     passed = passed && ApproximatelyEqual(y.Norm(), 1.f);
     passed = passed && ApproximatelyEqual(z.Norm(), 1.f);
+    passed = passed && ApproximatelyEqual((x + y).Norm(), static_cast<float>(sqrt(2)));
+    passed = passed && ApproximatelyEqual((x + y + z).Norm(), static_cast<float>(sqrt(3)));
 
     return passed;
 }
@@ -84,9 +87,10 @@ bool TestPointPlaneNormalDistance()
 {
     bool passed = true;
 
-    FloatPoint Q;
-    FloatVector N;
-    FloatPoint P;
+    passed == passed && ApproximatelyZero(PointPlaneNormalDistance(FloatPoint(0, 0, 5), FloatVector(0, 0, 0), FloatPoint(0, 0, 0)));
+    passed = passed && ApproximatelyEqual(PointPlaneNormalDistance(FloatPoint(0, 0, 5), FloatVector(0, 0, 1), FloatPoint(0, 0, 0)), 5.f);
+    passed = passed && ApproximatelyZero(PointPlaneNormalDistance(FloatPoint(0, 1, 0), FloatVector(0, 0, 1), FloatPoint(0, 0, 0)));
+    passed = passed && ApproximatelyEqual(PointPlaneNormalDistance(FloatPoint(0, 0, 5), FloatVector(0, 0, -1), FloatPoint(0, 0, 0)), -5.f);
 
     return passed;
 }
