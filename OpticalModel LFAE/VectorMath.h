@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector3.h"
+#include "Matrix3x3.h"
 
 namespace VectorMath
 {
@@ -92,7 +93,7 @@ namespace VectorMath
     }
 
     template<typename T>
-    Vector3<T> RotatePoint3d(Point3<T> const& r_center, T r_theta, Vector3<T> r_axis, Point3<T> point)
+    Vector3<T> RotatePoint3d(Point3<T> const& r_center, T r_theta, Vector3<T> r_axis, Point3<T> const& point)
     {
         if (ApproximatelyZero(r_theta) || ApproximatelyZero(r_axis.Norm()))
         {
@@ -103,8 +104,7 @@ namespace VectorMath
         auto cosTheta = cos(r_theta);
         auto oneMinusCosTheta = 1 - cosTheta;
         auto sinTheta = sin(r_theta);
-
-        T b[3][3] = {
+        Matrix3x3<T> rotationMatrix(
             static_cast<T>(cosTheta + r_axis.X() * r_axis.X() * oneMinusCosTheta),
             static_cast<T>(-r_axis.Z() * sinTheta + r_axis.X() * r_axis.Y() * oneMinusCosTheta),
             static_cast<T>(r_axis.Y() * sinTheta + r_axis.X() * r_axis.Z() * oneMinusCosTheta),
@@ -116,16 +116,9 @@ namespace VectorMath
             static_cast<T>(-r_axis.Y() * sinTheta + r_axis.X() * r_axis.Z() * oneMinusCosTheta),
             static_cast<T>(r_axis.X() * sinTheta + r_axis.Y() * r_axis.Z() * oneMinusCosTheta),
             static_cast<T>(cosTheta + r_axis.Z() * r_axis.Z() * oneMinusCosTheta)
-        };
-
-        point = point - r_center;
-
-        // matrix multiply here
-        Vector3<T> result(
-            point.X() * b[0][0] + point.Y() * b[0][1] + point.Z() * b[0][2],
-            point.X() * b[1][0] + point.Y() * b[1][1] + point.Z() * b[1][2],
-            point.X() * b[2][0] + point.Y() * b[2][1] + point.Z() * b[2][2]
         );
+
+        auto result = rotationMatrix * point;
 
         return result + r_center;
     }
