@@ -10,6 +10,7 @@
 #define _USE_MATH_DEFINES
 
 #include <assert.h>
+#include <complex>
 #include <math.h>
 #include <stdio.h>
 #include <tchar.h>
