@@ -16,9 +16,9 @@ std::vector<FloatPoint> ClosePackCentersFloat(int nshells, double outer_rad);
 //% build discretization centers by rows in the circular aperture
 //% leave the z - values at 0, since nominal positions are in the x - y plane
 template<typename T>
-std::vector<Point3<T>> ClosePackCenters(int nshells, double outer_rad)
+std::vector<Point3<T>> ClosePackCenters(int nshells, T outer_rad, T& discr_rad)
 {
-    auto discr_rad = outer_rad / (2 * nshells + 1);
+    discr_rad = outer_rad / (2 * nshells + 1);
     int nrow = static_cast<int>(round(outer_rad / discr_rad + 1));
     std::vector<Point3<T>> discr_ctr;
 

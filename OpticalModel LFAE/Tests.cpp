@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "ArraySetup.h"
 #include "ClosePackCenters.h"
 #include "VectorMath.h"
 #include "tests.h"
@@ -14,6 +15,7 @@ bool RunTests()
     assert(TestRotate3d());
     assert(TestPointPlaneNormalDistance());
     assert(TestClosePackCenters());
+    assert(TestArraySetup());
 
     return true;
 }
@@ -101,7 +103,18 @@ bool TestClosePackCenters()
 {
     bool passed = true;
 
-    auto centers = ClosePackCenters<float>(4, 10);
+    float rad;
+
+    auto centers = ClosePackCenters<float>(4, 10, rad);
+
+    return passed;
+}
+
+bool TestArraySetup()
+{
+    bool passed = true;
+
+    auto centers = ArraySetup<float>(6, .3f);
 
     return passed;
 }
