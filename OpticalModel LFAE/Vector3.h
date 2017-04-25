@@ -6,6 +6,7 @@ struct Vector3
 {
     static_assert(std::is_arithmetic<T>::value, "Must be an arithmetic type (expecting float or double)");
     static const T LAMBDA; // differences less than lambda are considered zero
+    typedef T value_type;
 
     // empty constructor
     Vector3()
@@ -65,9 +66,13 @@ struct Vector3
         return static_cast<T>(sqrt(X() * X() + Y() * Y() + Z() * Z()));
     }
 
-    Vector3<T>& Normalize()
+    Vector3<T>& Normalize(bool willThrow = true)
     {
-        *this = *this / Norm();
+        auto norm = Norm();
+        if (willThrow || norm != 0)
+        {
+            *this = *this / Norm();
+        }
         return *this;
     }
 
