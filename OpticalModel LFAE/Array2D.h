@@ -35,6 +35,16 @@ public:
             return data[offset + column];
         }
 
+        iterator begin()
+        {
+            return data.begin() + offset;
+        }
+
+        iterator end()
+        {
+            return data.begin() + offset + colSize;
+        }
+
         const_reference operator [](int column) const
         {
             assert(column >= 0 && column < colSize);
