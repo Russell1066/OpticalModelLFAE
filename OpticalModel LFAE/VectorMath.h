@@ -16,7 +16,7 @@ namespace VectorMath
     template<typename T>
     bool ApproximatelyZero(T value)
     {
-        return ApproximatelyEqual(value, 0.f);
+        return ApproximatelyEqual(value, static_cast<T>(0));
     }
 
     template<typename T>
