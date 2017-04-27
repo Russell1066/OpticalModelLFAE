@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vector>
+#include "Array2D.h"
 
-void NearField_R00();
+typedef double dataType;
+Array2D<dataType> NearField_R00();
 
 

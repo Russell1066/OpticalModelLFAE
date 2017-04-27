@@ -16,7 +16,7 @@
 using std::vector;
 using namespace VectorMath;
 
-typedef float dataType;
+typedef double dataType;
 typedef std::complex<dataType> complexType;
 typedef Point3<dataType> pointType;
 typedef std::vector<pointType> pointVector;
@@ -24,39 +24,13 @@ typedef std::vector<pointType> pointVector;
 template<typename T> void NormalizeVectors(std::vector<Point3<T>> &v);
 void RandomizeCenters(pointVector &v, const dataType &rand_polarization);
 
-class Target
-{
-public:
-    Target(int side, dataType extent, dataType distance) : side(side), data(side, side)
-    {
-        assert(side > 0);
-        assert(extent > 0);        
+template <typename dataType>
+Array2D<Point3<dataType>> GetTarget(int side, dataType extent, dataType distance);
 
-        auto min = -extent;
-        auto max = extent;
-        auto range = max - min;
-        auto increment = range / (side - 1);
+Point3<dataType>
+mean(pointVector const& v);
 
-        auto iter = data.begin();
-        for (int y = 0; y < side; ++y)
-        {
-            dataType yVal = y * increment + min;
-            for (int x = 0; x < side; ++x, ++iter)
-            {
-                iter->X() = x * increment + min;
-                iter->Y() = yVal;
-                iter->Z() = distance;
-            }
-        }
-    }
-
-
-private:
-    Array2D<pointType> data;
-    int         side;
-};
-
-void NearField_R00()
+Array2D<dataType> NearField_R00()
 {
     const Vector3<dataType> z(0, 0, 1);
 
@@ -160,8 +134,7 @@ void NearField_R00()
     //%   use the nominal grid as a template to create the actual emitter
     //%   aperture discretizations, by translating and rotating the nominal grid
     //%   to each optical center and optical vector
-    auto lens_pts = vector<Point3<dataType>>();
-    lens_pts.reserve(n_total_points);
+    auto lens_pts = Array2D<pointType>(n_lenses, n_lens_pts);
 
     //for i_lens = 1:n_lenses
     for (int i_lens = 0; i_lens < n_lenses; ++i_lens)
@@ -204,9 +177,11 @@ void NearField_R00()
         }
         else
         {
+            auto lensPtIter = lens_pts[i_lens].begin();
             for (auto const& centerPt : discr_ctr)
             {
-                lens_pts.push_back(centerPt + oa_center[i_lens]);
+                *lensPtIter = centerPt + oa_center[i_lens];
+                ++lensPtIter;
             }
         }
     }
@@ -226,7 +201,8 @@ void NearField_R00()
     //% calculate footprint grid locations
     //gv = (gmin:deltag:gmax)';
     //[X, Y] = meshgrid(gv, gv);
-    const Target target(100, static_cast<dataType>(3), target_surf_dist);
+    int npts = 100;
+    auto target = GetTarget<dataType>(npts, static_cast<dataType>(3), target_surf_dist);
 
     //
     //% calculate locations on the target surface above the footprint
@@ -265,44 +241,86 @@ void NearField_R00()
     //% initialize complex phase storage array to zeros
     //U = zeros(npts, npts);
     //U = complex(U, 0);
+
+    // U can probably be eliminated 
+    // by calculating U for every point on the target, the value of I can be calculated at that point
+    // this eliminates the storage requirement for U entirely - since it isn't graphed, there's no later use of it
+    Array2D<dataType> I(npts, npts);
     //% initialize(real - valued) intensity storage array to zeros
     //I = zeros(npts, npts);
     //
-    //% loop through points on the target surface
     //for i_x = 1:npts
     //for i_y = 1 : npts
+
+    //% loop through points on the target surface
+
     //% define Qi to be the current point on the target surface
     //Qi = [X(i_x, i_y) Y(i_x, i_y) Z(i_x, i_y)];
-    //
+
     //% the reference plane for the array is anchored at a point that is the
     //% average location of optical centers in the array. **Calculate inside
     //% the loop to allow for changing optical center positions**
+// # note, not done because oa centers are not currently changing
     //refplane_anchor = mean(oa_center, 1);
-    //
-    //% the reference plane normal vector is in the direction FROM Qi TO the
-    //% array anchor point
-    //refplane_N = Qi - refplane_anchor;
-    //norm_refplane_N = normV(refplane_N);
-    //if (~(norm_refplane_N > 0.0))
-    //error('CheckData:InputError', ' refplane_N is degenerate');
-    //end
-    //refplane_N = refplane_N / norm_refplane_N;
-    //
-    //% the sum of complex phases U(xpi, ypi, zpi) at every point in the target
-    //% surface will be over the number of lenses in the array, and then over
-    //% the number of discretization points in each lens
-    //for i_lens = 1:n_lenses
-    //for i_pt = 1 : n_lens_pts
-    //% establish a vector QiPi from the point Qi = (x, y, z) on the
-    //% target surface to the discretized lens point Pi
-    //Pi = lens_pts(n_lens_pts*(i_lens - 1) + i_pt, :);
-    //QiPi = Pi - Qi;
-    //norm_QiPi = normV(QiPi);
-    //if (~(norm_QiPi > 0.0))
-    //error('CheckData:InputError', ' QiPi is degenerate');
-    //end
-    //QiPi = QiPi / norm_QiPi;
-    //
+    auto refplane_anchor = mean(oa_center);
+    auto iterI = I.begin();
+    for (auto &Qi : target)
+    {
+        //% the reference plane normal vector is in the direction FROM Qi TO the
+        //% array anchor point
+        //refplane_N = Qi - refplane_anchor;
+        //norm_refplane_N = normV(refplane_N);
+        //if (~(norm_refplane_N > 0.0))
+        //error('CheckData:InputError', ' refplane_N is degenerate');
+        //end
+        //refplane_N = refplane_N / norm_refplane_N;
+        //
+        auto refplane_N = Qi - refplane_anchor;
+        if (ApproximatelyZero(refplane_N.Norm()))
+        {
+            throw "'CheckData:InputError', ' refplane_N is degenerate'";
+        }
+        refplane_N.Normalize();
+
+        complexType U;
+
+        for (int lens = 0; lens < n_lenses; ++lens)
+        {
+            auto oa_lens = oa_vector[lens];
+            for (int i_pt = 0; i_pt < n_lens_pts; ++i_pt)
+            {
+                auto Pi = lens_pts[lens][i_pt];
+                //% the sum of complex phases U(xpi, ypi, zpi) at every point in the target
+                //% surface will be over the number of lenses in the array, and then over
+                //% the number of discretization points in each lens
+                //for i_lens = 1:n_lenses
+                //for i_pt = 1 : n_lens_pts
+                //% establish a vector QiPi from the point Qi = (x, y, z) on the
+                //% target surface to the discretized lens point Pi
+                //Pi = lens_pts(n_lens_pts*(i_lens - 1) + i_pt, :);
+                //QiPi = Pi - Qi;
+                //norm_QiPi = normV(QiPi);
+                //if (~(norm_QiPi > 0.0))
+                //error('CheckData:InputError', ' QiPi is degenerate');
+                //end
+                //QiPi = QiPi / norm_QiPi;
+                //
+                auto QiPi = (Pi - Qi).Normalize();
+                auto dot_QiPi_oa = DotProduct(oa_lens, QiPi);
+                auto theta_i = acos(dot_QiPi_oa);
+                auto t_i = PointPlaneObliqueDistance(Pi, refplane_N, refplane_anchor, QiPi);
+                const auto i = complexType(0, 1);
+                const auto two = complexType(2);
+                const auto one = complexType(1);
+                auto sintheta_i = sin(theta_i);
+                U += ((exp(i*k * two * discr_rad * sintheta_i) - one) / (i * k * two * discr_rad * sintheta_i))* (exp(i * (k*t_i + phi[i_pt])));
+            }
+        }
+
+        *iterI = std::norm(U);
+        ++iterI;
+    }
+
     //% theta(i) = angle between the optical axis and a vector
     //% from the point Qi = (x, y, z) on the target surface to the
     //% discretized lens point Pi
@@ -337,6 +355,7 @@ void NearField_R00()
     //% plot 3D oblique view of intensity attenuation
     //min_dbI = min(dbI(:));
 
+    return I;
 }
 
 void RandomizeCenters(pointVector &v, const dataType &rand_polarization)
@@ -360,4 +379,47 @@ void NormalizeVectors(std::vector<Point3<T>> &v)
     {
         lens.Normalize();
     }
+}
+
+template <typename dataType>
+Array2D<Point3<dataType>> GetTarget(int side, dataType extent, dataType distance)
+{
+    assert(side > 0);
+    assert(extent > 0);
+
+    Array2D<Point3<dataType>> data(side, side);
+
+    auto min = -extent;
+    auto max = extent;
+    auto range = max - min;
+    auto increment = range / (side - 1);
+
+    auto iter = data.begin();
+    for (int y = 0; y < side; ++y)
+    {
+        dataType yVal = y * increment + min;
+        for (int x = 0; x < side; ++x, ++iter)
+        {
+            iter->X() = x * increment + min;
+            iter->Y() = yVal;
+            iter->Z() = distance;
+        }
+    }
+
+    return data;
+}
+
+Point3<dataType>
+mean(pointVector const& v)
+{
+    Point3<dataType> retv;
+
+    assert(v.size() > 0);
+
+    for (auto const& p : v)
+    {
+        retv = retv + p;
+    }
+
+    return retv / static_cast<dataType>(v.size());
 }
