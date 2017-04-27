@@ -71,7 +71,7 @@ struct Vector3
         auto norm = Norm();
         if (willThrow || norm != 0)
         {
-            *this = *this / Norm();
+            *this = *this / norm;
         }
         return *this;
     }
