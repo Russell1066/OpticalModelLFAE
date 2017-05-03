@@ -52,7 +52,7 @@ std::vector<Point3<T>> ClosePackCenters(int nshells, T outer_rad, T& discr_rad)
 
         for (int icol = 1; icol <= nshells; ++icol)
         {
-            auto xctr = static_cast<T>((2 * icol - (irow & 2)) * discr_rad);
+            auto xctr = static_cast<T>((2 * icol - (irow & 1)) * discr_rad);
 
             auto radius = sqrt(xctr * xctr + yctr * yctr);
             if (radius > outer_rad - radiusLimit)
