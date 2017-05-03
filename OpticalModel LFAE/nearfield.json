@@ -1,0 +1,14 @@
+{
+	"Demitter": 1.25e-05,
+	"Dlens": 0.5,
+	"FOV": 1e-05,
+	"NAemitter": 0.22,
+	"gmax": 1.0,
+	"lambda": 1.064e-06,
+	"lens_pitch": 0.5,
+	"m_threadCount": 8,
+	"n_discr_shells": 20,
+	"n_lens_shells": 1,
+	"npts": 1000,
+	"target_surf_dist": 1000.0
+}

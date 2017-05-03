@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <complex>
+#include <fstream>
 #include <math.h>
 #include <thread>
 #include <vector>
@@ -18,7 +19,7 @@
 
 using std::vector;
 using namespace VectorMath;
-
+using json = nlohmann::json;
 
 template<typename T> void NormalizeVectors(std::vector<Point3<T>> &v);
 void RandomizeCenters(pointVector &v, const dataType &rand_polarization);
@@ -312,7 +313,7 @@ public:
                     }
                 }));
                 qi += stride;
-                stride = std::min<int>(stride, target.size() - qi);
+                stride = std::min<int>(stride, static_cast<int>(target.size() - qi));
             }
 
             for (auto& thread : threads)
@@ -469,22 +470,48 @@ mean(pointVector const& v)
     return retv / static_cast<dataType>(v.size());
 }
 
-Array2D<dataType> NearField_R00()
+void to_json(json& j, const NearField& p) {
+    j = json
+    {
+        { "Dlens", p.Dlens },
+        { "lens_pitch", p.lens_pitch },
+        { "n_lens_shells", p.n_lens_shells },
+        { "lambda", p.lambda },
+        { "Demitter", p.Demitter },
+        { "NAemitter", p.NAemitter },
+        { "FOV", p.FOV },
+        { "target_surf_dist", p.target_surf_dist },
+        { "n_discr_shells", p.n_discr_shells },
+        { "npts", p.npts },
+        { "gmax", p.gmax },
+        { "m_threadCount", p.m_threadCount },
+    };
+}
+
+void from_json(const json& j, NearField& p)
 {
-    NearField n;
-    n.Dlens = 0.5;
-    n.lens_pitch = 0.5;
-    n.n_lens_shells = 0;
-    n.lambda = 1.064e-6;
-    n.Demitter = 12.5e-6;
-    n.NAemitter = 0.22;
-    n.FOV = 1e-5;
-    n.target_surf_dist = 1000;
-    n.n_discr_shells = 20;
-    n.npts = 1000;
-    n.gmax = 1;
-    n.m_threadCount = 8;
+    p.Dlens = j.at("Dlens").get<dataType>();
+    p.lens_pitch = j.at("lens_pitch").get<dataType>();
+    p.n_lens_shells = j.at("n_lens_shells").get<int>();
+    p.lambda = j.at("lambda").get<dataType>();
+    p.Demitter = j.at("Demitter").get<dataType>();
+    p.NAemitter = j.at("NAemitter").get<dataType>();
+    p.FOV = j.at("FOV").get<dataType>();
+    p.target_surf_dist = j.at("target_surf_dist").get<dataType>();
+    p.n_discr_shells = j.at("n_discr_shells").get<int>();
+    p.npts = j.at("npts").get<int>();
+    p.gmax = j.at("gmax").get<dataType>();
+    p.m_threadCount = j.at("m_threadCount").get<int>();
+}
+
+
+Array2D<dataType> NearField_R00(std::string const& paramFile)
+{
+    std::ifstream readParams(paramFile);
+    json j;
+    readParams >> j;    
+
+    NearField n = j;
 
     return n.R00();
 }
-

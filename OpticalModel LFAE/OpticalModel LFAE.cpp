@@ -7,16 +7,19 @@
 #include "NearField_R00.h"
 #include "VectorMath.h"
 #include "WriteToCSV.h"
+#include "json.hpp"
 
 using namespace VectorMath;
+using json = nlohmann::json;
 
-static const std::string file("C:\\Users\\Lori\\Documents\\I_00.csv");
+static const std::string file(".\\I_00.csv");
+static const std::string parameters("Y:\\Work Area\\UCSB\\OpticalModelLFAE\\OpticalModel LFAE\\nearfield.json");
 
 int main()
 {
-    //assert(RunTests());
+    assert(RunTests());
 
-    auto t = NearField_R00();
+    auto t = NearField_R00(parameters);
 
     WriteToCSV(file, t);
 

@@ -142,6 +142,7 @@
     <ClInclude Include="ArraySetup.h" />
     <ClInclude Include="ClosePackCenters.h" />
     <ClInclude Include="DataType.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="Matrix3x3.h" />
     <ClInclude Include="NearField_R00.h" />
     <ClInclude Include="stdafx.h" />
@@ -163,6 +164,9 @@
     </ClCompile>
     <ClCompile Include="Tests.cpp" />
     <ClCompile Include="WriteToCSV.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="nearfield.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
