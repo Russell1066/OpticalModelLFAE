@@ -45,6 +45,11 @@ public:
             return data.begin() + offset + colSize;
         }
 
+        int size() const
+        {
+            return colSize;
+        }
+
         const_reference operator [](int column) const
         {
             assert(column >= 0 && column < colSize);
@@ -57,7 +62,7 @@ public:
         int colSize;
     };
 
-    Array2D(int row, int col) : rows(row), cols(col), data(col * row)
+    Array2D(int row, int col) : m_rows(row), m_cols(col), m_data(col * row)
     {
         assert(col > 0);
         assert(row > 0);
@@ -65,19 +70,22 @@ public:
 
     Accessor operator [](int row)
     {
-        assert(row >= 0 && row < rows);
-        return Accessor(data, row * cols, cols);
+        assert(row >= 0 && row < m_rows);
+        return Accessor(m_data, row * m_cols, m_cols);
     }
 
-    iterator begin() { return data.begin(); }
-    iterator end() { return data.end(); }
+    iterator begin() { return m_data.begin(); }
+    iterator end() { return m_data.end(); }
+    size_t size() const { return m_data.size(); }
+    int cols() const { return m_cols; }
+    int rows() const { return m_rows; }
 
-    const_iterator begin() const { return data.begin(); }
-    const_iterator end() const { return data.end(); }
+    const_iterator begin() const { return m_data.begin(); }
+    const_iterator end() const { return m_data.end(); }
 
 private:
-    int rows;
-    int cols;
-    vector data;
+    int m_rows;
+    int m_cols;
+    vector m_data;
 };
 
