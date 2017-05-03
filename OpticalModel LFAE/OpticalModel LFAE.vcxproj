@@ -141,6 +141,7 @@
     <ClInclude Include="Array2D.h" />
     <ClInclude Include="ArraySetup.h" />
     <ClInclude Include="ClosePackCenters.h" />
+    <ClInclude Include="DataType.h" />
     <ClInclude Include="Matrix3x3.h" />
     <ClInclude Include="NearField_R00.h" />
     <ClInclude Include="stdafx.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="Tests.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="VectorMath.h" />
+    <ClInclude Include="WriteToCSV.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClosePackCenters.cpp" />
@@ -160,6 +162,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Tests.cpp" />
+    <ClCompile Include="WriteToCSV.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
