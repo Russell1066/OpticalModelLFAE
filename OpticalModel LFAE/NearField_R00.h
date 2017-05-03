@@ -2,8 +2,8 @@
 
 #include <vector>
 #include "Array2D.h"
+#include "DataType.h"
 
-typedef double dataType;
 Array2D<dataType> NearField_R00();
 
 
