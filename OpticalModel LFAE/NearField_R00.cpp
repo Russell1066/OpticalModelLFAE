@@ -127,13 +127,13 @@ public:
         //%                       pitch previously declared
 
         auto oa_center = ArraySetup<dataType>(n_lens_shells, lens_pitch);
-        WriteVector("oa_center", oa_center);
+        //WriteVector("oa_center", oa_center);
 
         int n_lenses = static_cast<int>(oa_center.size());
 
         //%   oa_vector(i_lens) = nominal optical axis pointing vectors, meters
         auto oa_vector = std::vector<Point3<dataType>>(n_lenses, z);
-        WriteVector("oa_vector", oa_vector);
+        //WriteVector("oa_vector", oa_vector);
 
         // Since the vector was initialized as normalized, this is unnecessary
         //NormalizeVectors(oa_vector);
@@ -147,7 +147,7 @@ public:
         //[discr_ctr, discr_rad, n_lens_pts] = ...
         dataType discr_rad;
         auto discr_ctr = ClosePackCenters<dataType>(n_discr_shells, Rlens, discr_rad);
-        WriteVector("ClosePackCenters", discr_ctr);
+        //WriteVector("ClosePackCenters", discr_ctr);
         int n_lens_pts = static_cast<int>(discr_ctr.size());
 
         //%   the total number of discretized lens elements in the entire array is
@@ -399,7 +399,7 @@ private:
 
 void WriteVector(std::string const& name, pointVector &oa_center)
 {
-    static const std::string dir("C:\\Users\\Lori\\Documents\\");
+    static const std::string dir(".\\");
     WriteToCSV(dir + name + ".csv", oa_center);
 }
 
