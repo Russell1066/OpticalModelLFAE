@@ -1,0 +1,7 @@
+{
+  "b": 100.0,
+  "bDivisions": 1000,
+  "lambda": 1.0,
+  "outputPointCount": 1000,
+  "thetaMax": 0.785398163397448
+}
