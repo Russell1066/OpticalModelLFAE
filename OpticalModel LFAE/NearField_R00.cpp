@@ -13,6 +13,7 @@
 #include "ArraySetup.h"
 #include "Array2D.h"
 #include "ClosePackCenters.h"
+#include "ConfigHelpers.h"
 #include "NearField_R00.h"
 #include "VectorMath.h"
 #include "WriteToCSV.h"
@@ -20,6 +21,7 @@
 using std::vector;
 using namespace VectorMath;
 using json = nlohmann::json;
+using namespace jsonHelper;
 
 template<typename T> void NormalizeVectors(std::vector<Point3<T>> &v);
 void RandomizeCenters(pointVector &v, const dataType &rand_polarization);
@@ -492,44 +494,26 @@ void to_json(json& j, const NearField& p) {
     };
 }
 
-template<typename T>
-T Get(const json &j, std::string const& name, T const& defaultValue)
-{
-    auto at = j.find(name);
-    if (at != j.end())
-    {
-        return at->get<T>();
-    }
-
-    return defaultValue;
-}
-
 void from_json(const json& j, NearField& p)
 {
-    p.Dlens = Get(j, "Dlens", p.Dlens);
-    p.lens_pitch = Get(j, "lens_pitch", p.lens_pitch);
-    p.n_lens_shells = Get(j, "n_lens_shells", p.n_lens_shells);
-    p.lambda = Get(j, "lambda", p.lambda);
-    p.Demitter = Get(j, "Demitter", p.Demitter);
-    p.NAemitter = Get(j, "NAemitter", p.NAemitter);
-    p.FOV = Get(j, "FOV", p.FOV);
-    p.target_surf_dist = Get(j, "target_surf_dist", p.target_surf_dist);
-    p.n_discr_shells = Get(j, "n_discr_shells", p.n_discr_shells);
-    p.npts = Get(j, "npts", p.npts);
-    p.gmax = Get(j, "gmax", p.gmax);
-    p.m_threadCount = Get(j, "m_threadCount", p.m_threadCount);
+    p.Dlens = GetValueOrDefault(j, "Dlens", p.Dlens);
+    p.lens_pitch = GetValueOrDefault(j, "lens_pitch", p.lens_pitch);
+    p.n_lens_shells = GetValueOrDefault(j, "n_lens_shells", p.n_lens_shells);
+    p.lambda = GetValueOrDefault(j, "lambda", p.lambda);
+    p.Demitter = GetValueOrDefault(j, "Demitter", p.Demitter);
+    p.NAemitter = GetValueOrDefault(j, "NAemitter", p.NAemitter);
+    p.FOV = GetValueOrDefault(j, "FOV", p.FOV);
+    p.target_surf_dist = GetValueOrDefault(j, "target_surf_dist", p.target_surf_dist);
+    p.n_discr_shells = GetValueOrDefault(j, "n_discr_shells", p.n_discr_shells);
+    p.npts = GetValueOrDefault(j, "npts", p.npts);
+    p.gmax = GetValueOrDefault(j, "gmax", p.gmax);
+    p.m_threadCount = GetValueOrDefault(j, "m_threadCount", p.m_threadCount);
 }
-
 
 Array2D<dataType> NearField_R00(std::string const& paramFile)
 {
-    std::ifstream readParams(paramFile);
-    json j;
-    readParams >> j;
-
-    NearField n = j;
-    printf("Calculating based on the following:\n%s", json(n).dump(4).c_str());
-
+    NearField n = FromJson<NearField>(paramFile);
+    printf("Calculating based on the following:\n%s", jsonHelper::GetJson(n).c_str());
 
     return n.R00();
 }
