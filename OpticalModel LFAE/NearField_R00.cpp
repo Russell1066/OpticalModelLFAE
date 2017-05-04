@@ -24,20 +24,20 @@ using json = nlohmann::json;
 using namespace jsonHelper;
 
 template<typename T> void NormalizeVectors(std::vector<Point3<T>> &v);
-void RandomizeCenters(pointVector &v, const dataType &rand_polarization);
+void RandomizeCenters(pointVector &v, const floatType &rand_polarization);
 
 void WriteVector(std::string const& name, pointVector &oa_center);
 
-template <typename dataType>
-Array2D<Point3<dataType>> GetTarget(int side, dataType extent, dataType distance);
+template <typename floatType>
+Array2D<Point3<floatType>> GetTarget(int side, floatType extent, floatType distance);
 
-Point3<dataType>
+Point3<floatType>
 mean(pointVector const& v);
 
 const auto i = complexType(0, 1);
 const auto _2 = complexType(2);
 const auto _1 = complexType(1);
-const Vector3<dataType> z(0, 0, 1);
+const Vector3<floatType> z(0, 0, 1);
 
 class NearField
 {
@@ -45,11 +45,11 @@ public:
     //% Declared System Configuration Details
     //%= ==================================== =
     //%   Dlens = diameter of each lens, meters
-    dataType Dlens = 0.5;
+    floatType Dlens = 0.5;
 
     //%   lens_pitch = lens pitch, meters; center - to - center distance from the
     //%   center lens to a lens in the first 'shell'
-    dataType lens_pitch = 0.5;
+    floatType lens_pitch = 0.5;
 
     //
     //%   n_lens_shells = number of lens 'shells' on one radius of the array, not
@@ -58,45 +58,45 @@ public:
 
     //
     //%   lambda = nominal emitter wavelength, meters
-    dataType lambda = static_cast<dataType>(1.064e-6);
+    floatType lambda = static_cast<floatType>(1.064e-6);
 
     //%   Demitter = fiber tip diameter of all emitters, meters
-    dataType Demitter = static_cast<dataType>(12.5e-6);
+    floatType Demitter = static_cast<floatType>(12.5e-6);
 
     //%   NAemitter = Numerical Aperture of all fiber tips
-    dataType NAemitter = static_cast<dataType>(0.22);
+    floatType NAemitter = static_cast<floatType>(0.22);
 
     //%   FOV = optical(angular) field of view for all lenses, radians
     //%         From Mission Parameters, e.g., produce a 1 m beam at 100 km
-    dataType FOV = static_cast<dataType>(1e-5);
+    floatType FOV = static_cast<floatType>(1e-5);
 
     //%   n_medium = index of refraction of the medium(1 in vacuum of space)
-    dataType n_medium = 1;
+    floatType n_medium = 1;
 
     //%   target_surf_dist = distance of the target surface from the nominal
     //%   emitter array center, meters
-    dataType target_surf_dist = 1000;
+    floatType target_surf_dist = 1000;
 
     //%   ndiscr = number of 'shells' on one radius of a lens element, not
     //%   including the center point
     int n_discr_shells = 5;
 
     int npts = 100;
-    dataType gmax = 3;
+    floatType gmax = 3;
 
     int m_threadCount = 0;
 
     pointType refplane_anchor;
     int n_lenses;
     int n_lens_pts;
-    dataType discr_rad;
-    vector<dataType> phi;
+    floatType discr_rad;
+    vector<floatType> phi;
     vector<pointType> oa_vector;
 
     //dataType gmin = -3;
 
 public:
-    Array2D<dataType> R00()
+    Array2D<floatType> R00()
     {
         //% Near Field Optical Model for an array of laser fiber amplifier emitters
         //% An array of N emitters is modeled by prescribing the(nominal) location
@@ -114,14 +114,14 @@ public:
         //% Modified 04 / 13 / 2017 --changed lens size determination --gbh
         //
 
-        dataType Rlens = Dlens / 2;
+        floatType Rlens = Dlens / 2;
 
         //
         //%   lens_pitch must be greater than or equal to Dlens
         assert(lens_pitch >= Dlens);
 
-        dataType array_radius = n_lens_shells*lens_pitch;
-        k = static_cast<dataType>(2 * M_PI / lambda);
+        floatType array_radius = n_lens_shells*lens_pitch;
+        k = static_cast<floatType>(2 * M_PI / lambda);
 
         //
         //
@@ -136,7 +136,7 @@ public:
         //%                       number of desired emitter shells and the lens
         //%                       pitch previously declared
 
-        auto oa_center = ArraySetup<dataType>(n_lens_shells, lens_pitch);
+        auto oa_center = ArraySetup<floatType>(n_lens_shells, lens_pitch);
         //WriteVector("oa_center", oa_center);
 
         n_lenses = static_cast<int>(oa_center.size());
@@ -155,7 +155,7 @@ public:
         //%   the grid is centered at the origin, using close - packed circular
         //%   discrete elements within the lens aperture
         //[discr_ctr, discr_rad, n_lens_pts] = ...
-        auto discr_ctr = ClosePackCenters<dataType>(n_discr_shells, Rlens, discr_rad);
+        auto discr_ctr = ClosePackCenters<floatType>(n_discr_shells, Rlens, discr_rad);
         //WriteVector("ClosePackCenters", discr_ctr);
         n_lens_pts = static_cast<int>(discr_ctr.size());
 
@@ -166,7 +166,7 @@ public:
         //
         //%   phi(p) = phase angle for each lens discretization point, radians
         //phi = zeros(n_total_points, 1);
-        phi = vector<dataType>(n_total_points, 1);
+        phi = vector<floatType>(n_total_points, 1);
         //
         //%   use the nominal grid as a template to create the actual emitter
         //%   aperture discretizations, by translating and rotating the nominal grid
@@ -178,7 +178,7 @@ public:
         {
             //% give the pattern a whirl, to 'randomize' polarization ?
             //    rand_polarization = pi*rand(1, 1);
-            dataType rand_polarization = static_cast<dataType>(M_PI * rand() / RAND_MAX);
+            floatType rand_polarization = static_cast<floatType>(M_PI * rand() / RAND_MAX);
             //RandomizeCenters(discr_ctr, rand_polarization);
 
             //% first, align the current aperture to the optical vector
@@ -238,7 +238,7 @@ public:
         //% calculate footprint grid locations
         //gv = (gmin:deltag:gmax)';
         //[X, Y] = meshgrid(gv, gv);
-        auto target = GetTarget<dataType>(npts, gmax, target_surf_dist);
+        auto target = GetTarget<floatType>(npts, gmax, target_surf_dist);
 
         //
         //% calculate locations on the target surface above the footprint
@@ -281,7 +281,7 @@ public:
         // U can probably be eliminated 
         // by calculating U for every point on the target, the value of I can be calculated at that point
         // this eliminates the storage requirement for U entirely - since it isn't graphed, there's no later use of it
-        Array2D<dataType> I(npts, npts);
+        Array2D<floatType> I(npts, npts);
 
         //% loop through points on the target surface
 
@@ -365,7 +365,7 @@ public:
         return I;
     }
 
-    dataType ShineOnTargetPoint(Array2D<pointType>& target, int offset, Array2D<pointType> &lens_pts) const
+    floatType ShineOnTargetPoint(Array2D<pointType>& target, int offset, Array2D<pointType> &lens_pts) const
     {
         auto Qi = *(target.begin() + offset);
         auto refplane_N = Qi - refplane_anchor;
@@ -401,7 +401,7 @@ public:
     }
 
 private:
-    dataType k;
+    floatType k;
 };
 
 void WriteVector(std::string const& name, pointVector &oa_center)
@@ -410,10 +410,10 @@ void WriteVector(std::string const& name, pointVector &oa_center)
     WriteToCSV(dir + name + ".csv", oa_center);
 }
 
-void RandomizeCenters(pointVector &v, const dataType &rand_polarization)
+void RandomizeCenters(pointVector &v, const floatType &rand_polarization)
 {
-    dataType cos_theta = static_cast<dataType>(cos(rand_polarization));
-    dataType sin_theta = static_cast<dataType>(sin(rand_polarization));
+    floatType cos_theta = static_cast<floatType>(cos(rand_polarization));
+    floatType sin_theta = static_cast<floatType>(sin(rand_polarization));
     for (pointVector::value_type& value : v)
     {
         auto x = cos_theta * value.X() + sin_theta * value.Y();
@@ -433,13 +433,13 @@ void NormalizeVectors(std::vector<Point3<T>> &v)
     }
 }
 
-template <typename dataType>
-Array2D<Point3<dataType>> GetTarget(int side, dataType extent, dataType distance)
+template <typename floatType>
+Array2D<Point3<floatType>> GetTarget(int side, floatType extent, floatType distance)
 {
     assert(side > 0);
     assert(extent > 0);
 
-    Array2D<Point3<dataType>> data(side, side);
+    Array2D<Point3<floatType>> data(side, side);
 
     auto min = -extent;
     auto max = extent;
@@ -449,7 +449,7 @@ Array2D<Point3<dataType>> GetTarget(int side, dataType extent, dataType distance
     auto iter = data.begin();
     for (int y = 0; y < side; ++y)
     {
-        dataType yVal = y * increment + min;
+        floatType yVal = y * increment + min;
         for (int x = 0; x < side; ++x, ++iter)
         {
             iter->X() = x * increment + min;
@@ -461,10 +461,10 @@ Array2D<Point3<dataType>> GetTarget(int side, dataType extent, dataType distance
     return data;
 }
 
-Point3<dataType>
+Point3<floatType>
 mean(pointVector const& v)
 {
-    Point3<dataType> retv;
+    Point3<floatType> retv;
 
     assert(v.size() > 0);
 
@@ -473,7 +473,7 @@ mean(pointVector const& v)
         retv = retv + p;
     }
 
-    return retv / static_cast<dataType>(v.size());
+    return retv / static_cast<floatType>(v.size());
 }
 
 void to_json(json& j, const NearField& p) {
@@ -510,7 +510,7 @@ void from_json(const json& j, NearField& p)
     p.m_threadCount = GetValueOrDefault(j, "m_threadCount", p.m_threadCount);
 }
 
-Array2D<dataType> NearField_R00(std::string const& paramFile)
+Array2D<floatType> NearField_R00(std::string const& paramFile)
 {
     NearField n = FromJson<NearField>(paramFile);
     printf("Calculating based on the following:\n%s", jsonHelper::GetJson(n).c_str());

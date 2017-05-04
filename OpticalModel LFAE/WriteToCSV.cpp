@@ -7,7 +7,7 @@
 
 static const std::string separator(", ");
 
-void WriteToCSV(std::string const& filename, Array2D<dataType>& data)
+void WriteToCSV(std::string const& filename, Array2D<floatType>& data)
 {
     FILE* file;
     fopen_s(&file, filename.c_str(), "wt");
@@ -35,7 +35,7 @@ void WriteToCSV(std::string const& filename, Array2D<dataType>& data)
     fclose(file);
 }
 
-void WriteToCSV(std::string const& filename, std::vector<Point3<dataType>> const& data)
+void WriteToCSV(std::string const& filename, std::vector<Point3<floatType>> const& data)
 {
     FILE* file;
     fopen_s(&file, filename.c_str(), "wt");
@@ -52,7 +52,7 @@ void WriteToCSV(std::string const& filename, std::vector<Point3<dataType>> const
     fclose(file);
 }
 
-void WriteToCSV(std::string const& filename, std::vector<dataType> const& data)
+void WriteToCSV(std::string const& filename, std::vector<floatType> const& data)
 {
     FILE* file;
     fopen_s(&file, filename.c_str(), "wt");

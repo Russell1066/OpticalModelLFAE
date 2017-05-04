@@ -5,4 +5,4 @@
 
 #include "DataType.h"
 
-std::vector<dataType> ComputeFraunhoferFarField1DFlux(std::string const& paramFile = "");
+std::vector<floatType> ComputeFraunhoferFarField1DFlux(std::string const& paramFile = "");

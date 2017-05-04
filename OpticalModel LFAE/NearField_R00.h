@@ -5,6 +5,6 @@
 #include "Array2D.h"
 #include "DataType.h"
 
-Array2D<dataType> NearField_R00(std::string const& parameters);
+Array2D<floatType> NearField_R00(std::string const& parameters);
 
 

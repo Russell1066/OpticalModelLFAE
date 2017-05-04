@@ -37,7 +37,7 @@ int main(int argc, char*argv[])
     auto  beg = flux.begin();
     auto end = beg + nPoints;
     auto compare = flux.rbegin();
-    dataType maxDiff = 0;
+    floatType maxDiff = 0;
     for (; beg != end; ++beg, ++compare)
     {
         auto diff = abs(*beg - *compare);
