@@ -141,7 +141,9 @@
     <ClInclude Include="Array2D.h" />
     <ClInclude Include="ArraySetup.h" />
     <ClInclude Include="ClosePackCenters.h" />
+    <ClInclude Include="ConfigHelpers.h" />
     <ClInclude Include="DataType.h" />
+    <ClInclude Include="FraunhoferFarField1D.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Matrix3x3.h" />
     <ClInclude Include="NearField_R00.h" />
@@ -154,6 +156,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ClosePackCenters.cpp" />
+    <ClCompile Include="FraunhoferFarField1D.cpp" />
     <ClCompile Include="NearField_R00.cpp" />
     <ClCompile Include="OpticalModel LFAE.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -166,6 +169,7 @@
     <ClCompile Include="WriteToCSV.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Fraunhofer1D.json" />
     <None Include="nearfield.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
