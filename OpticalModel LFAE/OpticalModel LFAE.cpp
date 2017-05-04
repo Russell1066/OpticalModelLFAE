@@ -13,13 +13,18 @@ using namespace VectorMath;
 using json = nlohmann::json;
 
 static const std::string file(".\\I_00.csv");
-static const std::string parameters("Y:\\Work Area\\UCSB\\OpticalModelLFAE\\OpticalModel LFAE\\nearfield.json");
 
-int main()
+int main(int argc, char*argv[])
 {
     assert(RunTests());
 
-    auto t = NearField_R00(parameters);
+    if (argc < 2)
+    {
+        printf("Need the name of a configuration file\n");
+        return -1;
+    }
+
+    auto t = NearField_R00(argv[1]);
 
     WriteToCSV(file, t);
 
