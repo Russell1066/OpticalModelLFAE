@@ -3,7 +3,7 @@
 #include <complex>
 #include "Vector3.h"
 
-typedef double dataType;
-typedef std::complex<dataType> complexType;
-typedef Point3<dataType> pointType;
+typedef double floatType;
+typedef std::complex<floatType> complexType;
+typedef Point3<floatType> pointType;
 typedef std::vector<pointType> pointVector;

@@ -19,20 +19,20 @@ using std::vector;
 
 namespace FraunhoferFarField1D
 {
-    static const dataType Default_lambda = 1;
-    static const dataType Default_b = 10 * Default_lambda;
+    static const floatType Default_lambda = 1;
+    static const floatType Default_b = 10 * Default_lambda;
     static const int Default_outputPointCount = 100;
-    static const dataType Default_thetaMax = M_PI_4;
+    static const floatType Default_thetaMax = M_PI_4;
     static const int Default_bDivisions = 1000;
 
     static const complexType _i(0, 1);
 
     struct Parameters
     {
-        dataType lambda;        // wavelength
-        dataType b;             // bMin = -b
+        floatType lambda;        // wavelength
+        floatType b;             // bMin = -b
         int bDivisions;         // deltaB = b / bDivisions
-        dataType thetaMax;      // thetaMin = - thetaMax
+        floatType thetaMax;      // thetaMin = - thetaMax
         int outputPointCount;   // deltaTheta = thetaMax * 2 / outputPointCount
 
         Parameters() :
@@ -112,7 +112,7 @@ namespace FraunhoferFarField1D
             k = M_2_PI / params.lambda;
         }
 
-        dataType Compute(dataType theta)
+        floatType Compute(floatType theta)
         {
             complexType integral = 0;
 
@@ -129,17 +129,17 @@ namespace FraunhoferFarField1D
         }
 
     private:
-        dataType minB;
-        dataType maxB;
-        dataType deltaB;
+        floatType minB;
+        floatType maxB;
+        floatType deltaB;
         int bDivisions;
 
-        dataType k;
+        floatType k;
     };
 
-    vector<dataType> ComputeFlux(Parameters const& params)
+    vector<floatType> ComputeFlux(Parameters const& params)
     {
-        vector<dataType> retv;
+        vector<floatType> retv;
 
         ValidateParameters(params);
 
@@ -147,12 +147,12 @@ namespace FraunhoferFarField1D
 
         retv.reserve(params.outputPointCount);
 
-        dataType thetaMax = params.thetaMax;
-        dataType thetaMin = -thetaMax;
+        floatType thetaMax = params.thetaMax;
+        floatType thetaMin = -thetaMax;
         int maxIndex = params.outputPointCount;
-        dataType deltaTheta = (thetaMax - thetaMin) / (maxIndex - 1);
+        floatType deltaTheta = (thetaMax - thetaMin) / (maxIndex - 1);
 
-        dataType theta = thetaMin;
+        floatType theta = thetaMin;
         for (int thetaIndex = 0; thetaIndex < maxIndex; ++thetaIndex, theta += deltaTheta)
         {
             retv.push_back(fluxCalculator.Compute(theta));
@@ -162,7 +162,7 @@ namespace FraunhoferFarField1D
     }
 }
 
-vector<dataType> ComputeFraunhoferFarField1DFlux(std::string const& paramFile)
+vector<floatType> ComputeFraunhoferFarField1DFlux(std::string const& paramFile)
 {
     auto p = FromJson<FraunhoferFarField1D::Parameters>(paramFile);
 

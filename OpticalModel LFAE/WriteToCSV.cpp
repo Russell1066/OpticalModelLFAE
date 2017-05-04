@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "DataType.h"
 #include "VectorMath.h"
 #include "WriteToCSV.h"
 
