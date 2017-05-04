@@ -82,7 +82,14 @@ public:
     int npts = 100;
     dataType gmax = 3;
 
-    int m_threadCount = static_cast<int>(std::thread::hardware_concurrency());
+    int m_threadCount = 0;
+
+    pointType refplane_anchor;
+    int n_lenses;
+    int n_lens_pts;
+    dataType discr_rad;
+    vector<dataType> phi;
+    vector<pointType> oa_vector;
 
     //dataType gmin = -3;
 
@@ -130,10 +137,10 @@ public:
         auto oa_center = ArraySetup<dataType>(n_lens_shells, lens_pitch);
         //WriteVector("oa_center", oa_center);
 
-        int n_lenses = static_cast<int>(oa_center.size());
+        n_lenses = static_cast<int>(oa_center.size());
 
         //%   oa_vector(i_lens) = nominal optical axis pointing vectors, meters
-        auto oa_vector = std::vector<Point3<dataType>>(n_lenses, z);
+        oa_vector = std::vector<pointType>(n_lenses, z);
         //WriteVector("oa_vector", oa_vector);
 
         // Since the vector was initialized as normalized, this is unnecessary
@@ -146,10 +153,9 @@ public:
         //%   the grid is centered at the origin, using close - packed circular
         //%   discrete elements within the lens aperture
         //[discr_ctr, discr_rad, n_lens_pts] = ...
-        dataType discr_rad;
         auto discr_ctr = ClosePackCenters<dataType>(n_discr_shells, Rlens, discr_rad);
         //WriteVector("ClosePackCenters", discr_ctr);
-        int n_lens_pts = static_cast<int>(discr_ctr.size());
+        n_lens_pts = static_cast<int>(discr_ctr.size());
 
         //%   the total number of discretized lens elements in the entire array is
         //%   determined from the numer of points within each lens times the number
@@ -158,7 +164,7 @@ public:
         //
         //%   phi(p) = phase angle for each lens discretization point, radians
         //phi = zeros(n_total_points, 1);
-        auto phi = vector<dataType>(n_total_points, 1);
+        phi = vector<dataType>(n_total_points, 1);
         //
         //%   use the nominal grid as a template to create the actual emitter
         //%   aperture discretizations, by translating and rotating the nominal grid
@@ -274,11 +280,6 @@ public:
         // by calculating U for every point on the target, the value of I can be calculated at that point
         // this eliminates the storage requirement for U entirely - since it isn't graphed, there's no later use of it
         Array2D<dataType> I(npts, npts);
-        //% initialize(real - valued) intensity storage array to zeros
-        //I = zeros(npts, npts);
-        //
-        //for i_x = 1:npts
-        //for i_y = 1 : npts
 
         //% loop through points on the target surface
 
@@ -290,26 +291,29 @@ public:
         //% the loop to allow for changing optical center positions**
         // # note, not done because oa centers are not currently changing
         //refplane_anchor = mean(oa_center, 1);
-        auto refplane_anchor = mean(oa_center);
+        refplane_anchor = mean(oa_center);
 
-        if (m_threadCount <= 1)
+        // If the m_threadCount is zero, use the hardware_concurrency value
+        int maxThreads = m_threadCount ? m_threadCount : static_cast<int>(std::thread::hardware_concurrency());
+
+        if (maxThreads <= 1)
         {
             for (int i = 0; i < static_cast<int>(target.size()); ++i)
             {
-                *(I.begin() + i) = ShineOnTargetPoint(target, i, refplane_anchor, n_lenses, oa_vector, n_lens_pts, lens_pts, discr_rad, phi);
+                *(I.begin() + i) = ShineOnTargetPoint(target, i, lens_pts);
             };
         }
         else
         {
             int qi = 0;
-            int stride = static_cast<int>((target.size() + m_threadCount - 1) / m_threadCount);
+            int stride = static_cast<int>((target.size() + maxThreads - 1) / maxThreads);
             vector<std::thread> threads;
-            for (int proc = 0; proc < m_threadCount; ++proc)
+            for (int proc = 0; proc < maxThreads; ++proc)
             {
                 threads.push_back(std::thread([&, qi, stride]() {
                     for (int i = 0; i < stride; ++i)
                     {
-                        *(I.begin() + qi + i) = ShineOnTargetPoint(target, qi + i, refplane_anchor, n_lenses, oa_vector, n_lens_pts, lens_pts, discr_rad, phi);
+                        *(I.begin() + qi + i) = ShineOnTargetPoint(target, qi + i, lens_pts);
                     }
                 }));
                 qi += stride;
@@ -359,7 +363,7 @@ public:
         return I;
     }
 
-    dataType ShineOnTargetPoint(Array2D<pointType>& target, int offset, Point3<double> &refplane_anchor, int n_lenses, pointVector &oa_vector, int n_lens_pts, Array2D<pointType> &lens_pts, dataType &discr_rad, std::vector<dataType> &phi)
+    dataType ShineOnTargetPoint(Array2D<pointType>& target, int offset, Array2D<pointType> &lens_pts) const
     {
         auto Qi = *(target.begin() + offset);
         auto refplane_N = Qi - refplane_anchor;
@@ -488,20 +492,32 @@ void to_json(json& j, const NearField& p) {
     };
 }
 
+template<typename T>
+T Get(const json &j, std::string const& name, T const& defaultValue)
+{
+    auto at = j.find(name);
+    if (at != j.end())
+    {
+        return at->get<T>();
+    }
+
+    return defaultValue;
+}
+
 void from_json(const json& j, NearField& p)
 {
-    p.Dlens = j.at("Dlens").get<dataType>();
-    p.lens_pitch = j.at("lens_pitch").get<dataType>();
-    p.n_lens_shells = j.at("n_lens_shells").get<int>();
-    p.lambda = j.at("lambda").get<dataType>();
-    p.Demitter = j.at("Demitter").get<dataType>();
-    p.NAemitter = j.at("NAemitter").get<dataType>();
-    p.FOV = j.at("FOV").get<dataType>();
-    p.target_surf_dist = j.at("target_surf_dist").get<dataType>();
-    p.n_discr_shells = j.at("n_discr_shells").get<int>();
-    p.npts = j.at("npts").get<int>();
-    p.gmax = j.at("gmax").get<dataType>();
-    p.m_threadCount = j.at("m_threadCount").get<int>();
+    p.Dlens = Get(j, "Dlens", p.Dlens);
+    p.lens_pitch = Get(j, "lens_pitch", p.lens_pitch);
+    p.n_lens_shells = Get(j, "n_lens_shells", p.n_lens_shells);
+    p.lambda = Get(j, "lambda", p.lambda);
+    p.Demitter = Get(j, "Demitter", p.Demitter);
+    p.NAemitter = Get(j, "NAemitter", p.NAemitter);
+    p.FOV = Get(j, "FOV", p.FOV);
+    p.target_surf_dist = Get(j, "target_surf_dist", p.target_surf_dist);
+    p.n_discr_shells = Get(j, "n_discr_shells", p.n_discr_shells);
+    p.npts = Get(j, "npts", p.npts);
+    p.gmax = Get(j, "gmax", p.gmax);
+    p.m_threadCount = Get(j, "m_threadCount", p.m_threadCount);
 }
 
 
@@ -509,9 +525,11 @@ Array2D<dataType> NearField_R00(std::string const& paramFile)
 {
     std::ifstream readParams(paramFile);
     json j;
-    readParams >> j;    
+    readParams >> j;
 
     NearField n = j;
+    printf("Calculating based on the following:\n%s", json(n).dump(4).c_str());
+
 
     return n.R00();
 }
