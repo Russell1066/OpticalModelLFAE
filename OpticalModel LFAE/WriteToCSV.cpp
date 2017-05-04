@@ -52,3 +52,20 @@ void WriteToCSV(std::string const& filename, std::vector<Point3<dataType>> const
     fclose(file);
 }
 
+void WriteToCSV(std::string const& filename, std::vector<dataType> const& data)
+{
+    FILE* file;
+    fopen_s(&file, filename.c_str(), "wt");
+    if (!file)
+    {
+        throw "File not opened";
+    }
+
+    for (auto const& value : data)
+    {
+        fprintf(file, "%f\n", value);
+    }
+
+    fclose(file);
+}
+
