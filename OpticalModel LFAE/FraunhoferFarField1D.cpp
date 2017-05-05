@@ -109,7 +109,7 @@ namespace FraunhoferFarField1D
             bDivisions = params.bDivisions;
             deltaB = params.b / (bDivisions - 1);
 
-            k = M_2_PI / params.lambda;
+            k = 2 * M_PI / params.lambda;
         }
 
         floatType Compute(floatType theta)
