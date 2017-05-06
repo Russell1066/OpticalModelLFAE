@@ -17,11 +17,27 @@ using namespace jsonHelper;
 using std::string;
 using std::vector;
 
+
+
+template<typename resultType, typename rangeType, typename functionType>
+resultType Integrate(rangeType start, rangeType end, functionType toIntegrate, int nSteps, rangeType &deltaRange)
+{
+    resultType result;
+
+    deltaRange = (end - start) / (nSteps - 1);
+    for (int i = 0; i < nSteps; ++i, start += deltaRange)
+    {
+        result += toIntegrate(start, deltaRange);
+    }
+
+    return result;
+}
+
 namespace FraunhoferFarField1D
 {
     static const floatType Default_lambda = 1;
     static const floatType Default_b = 10 * Default_lambda;
-    static const int Default_outputPointCount = 100;
+    static const int Default_thetaDivisions = 100;
     static const floatType Default_thetaMax = M_PI_4;
     static const int Default_bDivisions = 1000;
 
@@ -29,18 +45,18 @@ namespace FraunhoferFarField1D
 
     struct Parameters
     {
-        floatType lambda;        // wavelength
-        floatType b;             // bMin = -b
-        int bDivisions;         // deltaB = b / bDivisions
-        floatType thetaMax;      // thetaMin = - thetaMax
-        int outputPointCount;   // deltaTheta = thetaMax * 2 / outputPointCount
+        floatType lambda;           // wavelength
+        floatType b;                // bMin = -b
+        int bDivisions;             // deltaB = b / bDivisions
+        floatType thetaMax;         // thetaMin = - thetaMax
+        int thetaDivisions;         // deltaTheta = thetaMax * 2 / thetaDivisions
 
         Parameters() :
             lambda(Default_lambda),
             b(Default_b),
             bDivisions(Default_bDivisions),
             thetaMax(Default_thetaMax),
-            outputPointCount(Default_outputPointCount)
+            thetaDivisions(Default_thetaDivisions)
         {
 
         }
@@ -51,7 +67,7 @@ namespace FraunhoferFarField1D
         {
             { "lambda", p.lambda },
             { "b", p.b },
-            { "outputPointCount", p.outputPointCount },
+            { "thetaDivisions", p.thetaDivisions },
             { "thetaMax", p.thetaMax },
             { "bDivisions", p.bDivisions },
         };
@@ -61,7 +77,7 @@ namespace FraunhoferFarField1D
     {
         p.lambda = GetValueOrDefault(j, "lambda", Default_lambda);
         p.b = GetValueOrDefault(j, "b", Default_b);
-        p.outputPointCount = GetValueOrDefault(j, "outputPointCount", Default_outputPointCount);
+        p.thetaDivisions = GetValueOrDefault(j, "thetaDivisions", Default_thetaDivisions);
         p.thetaMax = GetValueOrDefault(j, "thetaMax", Default_thetaMax);
         p.bDivisions = GetValueOrDefault(j, "bDivisions", Default_bDivisions);
     }
@@ -69,10 +85,10 @@ namespace FraunhoferFarField1D
     void ValidateParameters(Parameters const& params)
     {
         vector<string> errors;
-        assert(params.outputPointCount > 0);
-        if (params.outputPointCount <= 0)
+        assert(params.thetaDivisions > 0);
+        if (params.thetaDivisions <= 0)
         {
-            errors.push_back("Must have more than 0 output points - pick something reasonable - bad outputPointCount");
+            errors.push_back("Must have more than 0 output points - pick something reasonable - bad thetaDivisions");
         }
 
         assert(params.lambda > 0);
@@ -114,16 +130,14 @@ namespace FraunhoferFarField1D
 
         floatType Compute(floatType theta)
         {
-            complexType integral = 0;
-
             auto sinTheta = sin(theta);
-            auto y = minB;
-            for (int yIndex = 0; yIndex < bDivisions; ++yIndex, y += deltaB)
-            {
-                integral += exp(_i * k * y * sinTheta);
-            }
 
-            integral *= deltaB;
+            floatType delta = 0;
+            complexType integral = Integrate<complexType>(minB, maxB, [&](floatType y, floatType deltaY) {
+                return exp(_i * k * y * sinTheta);
+            }, bDivisions, delta);
+
+            integral *= delta;
 
             return std::norm(integral);
         }
@@ -145,11 +159,11 @@ namespace FraunhoferFarField1D
 
         FluxCalculator fluxCalculator(params);
 
-        retv.reserve(params.outputPointCount);
+        retv.reserve(params.thetaDivisions);
 
         floatType thetaMax = params.thetaMax;
         floatType thetaMin = -thetaMax;
-        int maxIndex = params.outputPointCount;
+        int maxIndex = params.thetaDivisions;
         floatType deltaTheta = (thetaMax - thetaMin) / (maxIndex - 1);
 
         floatType theta = thetaMin;
