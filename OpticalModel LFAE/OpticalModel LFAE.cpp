@@ -3,31 +3,40 @@
 
 #include "stdafx.h"
 
-#include "json.hpp"
 #include "FraunhoferFarField1D.h"
 #include "NearField_R00.h"
 #include "Tests.h"
-#include "VectorMath.h"
 #include "WriteToCSV.h"
 
-using namespace VectorMath;
-using json = nlohmann::json;
-
-static const std::string file(".\\I_00.csv");
+using std::string;
 
 int main(int argc, char*argv[])
 {
-    //assert(RunTests());
+    assert(RunTests());
 
-    if (argc < 2)
+    string parameterFile;
+    string outputFile = ".\\output.csv";
+
+    if (argc > 1)
     {
-        printf("Need the name of a configuration file\n");
-        return -1;
+        parameterFile = argv[1];
     }
 
-    auto flux = ComputeFraunhoferFarField1DFlux(argv[1]);
+    if (argc > 2)
+    {
+        outputFile = argv[2];
+    }
 
-    WriteToCSV(".\\ringingInTheNews.csv", flux);
+    auto flux = ComputeFraunhoferFarField1DFlux(parameterFile);
+
+    try
+    {
+        WriteToCSV(outputFile, flux);
+    }
+    catch (...)
+    {
+        printf("Output file '%s' not written", outputFile.c_str());
+    }
 
     return 0;
 }

@@ -180,7 +180,7 @@ vector<floatType> ComputeFraunhoferFarField1DFlux(std::string const& paramFile)
 {
     auto p = FromJson<FraunhoferFarField1D::Parameters>(paramFile);
 
-    printf("Calculating based on the following:\n%s", jsonHelper::GetJson(p).c_str());
+    printf("Calculating based on the following:\n%s\n", jsonHelper::GetJson(p).c_str());
 
     return (ComputeFlux(p));
 }
