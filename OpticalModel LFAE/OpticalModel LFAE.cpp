@@ -25,24 +25,7 @@ int main(int argc, char*argv[])
         return -1;
     }
 
-    //auto t = NearField_R00(argv[1]);
-
-    //WriteToCSV(file, t);
-
-    //auto max = *t.begin();
-    //auto min = max;
-
     auto flux = ComputeFraunhoferFarField1DFlux(argv[1]);
-    auto nPoints = flux.size() / 2;
-    auto  beg = flux.begin();
-    auto end = beg + nPoints;
-    auto compare = flux.rbegin();
-    floatType maxDiff = 0;
-    for (; beg != end; ++beg, ++compare)
-    {
-        auto diff = abs(*beg - *compare);
-        maxDiff = std::max(maxDiff, diff);
-    }
 
     WriteToCSV(".\\ringingInTheNews.csv", flux);
 
