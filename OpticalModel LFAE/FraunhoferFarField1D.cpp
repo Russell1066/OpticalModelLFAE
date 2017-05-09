@@ -30,6 +30,8 @@ namespace FraunhoferFarField1D
             k = 2 * M_PI / params.lambda;
         }
 
+        // Given a set of parameters
+        // Calculate the flux at the range of angles given
         static vector<floatType> ComputeFlux(Parameters const& params)
         {
             vector<floatType> retv;
@@ -43,7 +45,7 @@ namespace FraunhoferFarField1D
             floatType thetaMax = params.thetaMax;
             floatType thetaMin = -thetaMax;
 
-            for_range(thetaMin, thetaMax, [&retv, fluxCalculator](auto i, auto theta, auto delta) {
+            for_closed_range(thetaMin, thetaMax, [&retv, fluxCalculator](auto i, auto theta, auto delta) {
                 retv[i] = fluxCalculator.Compute(theta);
             }, params.thetaDivisions);
 
@@ -55,10 +57,9 @@ namespace FraunhoferFarField1D
         {
             auto sinTheta = sin(theta);
 
-            floatType delta = 0;
             auto integral = Integrate<complexType>(minB, maxB, [&](floatType b) {
                 return exp(_i * k * b * sinTheta);
-            }, bDivisions, delta);
+            }, bDivisions);
 
             return std::norm(integral);
         }
