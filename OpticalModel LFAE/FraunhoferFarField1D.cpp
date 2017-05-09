@@ -18,16 +18,21 @@ using std::string;
 using std::vector;
 
 
+template<typename T>
+T GetClosedRangeIncrement(T min, T max, size_t count)
+{
+    return (max - min) / (count - 1);
+}
 
-template<typename resultType, typename rangeType, typename functionType>
-resultType Integrate(rangeType start, rangeType end, functionType toIntegrate, int nSteps, rangeType &deltaRange)
+template<typename resultType, typename rangeType, typename integrandFn>
+resultType Integrate(rangeType start, rangeType end, integrandFn integrand, int nSteps, _Out_ rangeType &deltaRange)
 {
     resultType result;
 
-    deltaRange = (end - start) / (nSteps - 1);
+    deltaRange = GetClosedRangeIncrement(start, end, nSteps);
     for (int i = 0; i < nSteps; ++i, start += deltaRange)
     {
-        result += toIntegrate(start, deltaRange);
+        result += integrand(start, deltaRange);
     }
 
     return result;
@@ -41,7 +46,7 @@ namespace FraunhoferFarField1D
     static const floatType Default_thetaMax = M_PI_4;
     static const int Default_bDivisions = 1000;
 
-    static const complexType _i(0, 1);
+    static const complexType _i = { 0, 1 };
 
     struct Parameters
     {
@@ -123,7 +128,6 @@ namespace FraunhoferFarField1D
             minB = -params.b / 2;
             maxB = -minB;
             bDivisions = params.bDivisions;
-            deltaB = params.b / (bDivisions - 1);
 
             k = 2 * M_PI / params.lambda;
         }
@@ -133,8 +137,8 @@ namespace FraunhoferFarField1D
             auto sinTheta = sin(theta);
 
             floatType delta = 0;
-            complexType integral = Integrate<complexType>(minB, maxB, [&](floatType y, floatType deltaY) {
-                return exp(_i * k * y * sinTheta);
+            auto integral = Integrate<complexType>(minB, maxB, [&](floatType b, floatType /* deltaB */) {
+                return exp(_i * k * b * sinTheta);
             }, bDivisions, delta);
 
             integral *= delta;
@@ -145,7 +149,6 @@ namespace FraunhoferFarField1D
     private:
         floatType minB;
         floatType maxB;
-        floatType deltaB;
         int bDivisions;
 
         floatType k;
@@ -159,17 +162,18 @@ namespace FraunhoferFarField1D
 
         FluxCalculator fluxCalculator(params);
 
-        retv.reserve(params.thetaDivisions);
+        retv.resize(params.thetaDivisions);
 
         floatType thetaMax = params.thetaMax;
         floatType thetaMin = -thetaMax;
         int maxIndex = params.thetaDivisions;
-        floatType deltaTheta = (thetaMax - thetaMin) / (maxIndex - 1);
+        auto deltaTheta = GetClosedRangeIncrement(thetaMin, thetaMax, maxIndex);
 
-        floatType theta = thetaMin;
-        for (int thetaIndex = 0; thetaIndex < maxIndex; ++thetaIndex, theta += deltaTheta)
+        auto theta = thetaMin;
+
+        for (int thetaIndex = 0; thetaIndex < maxIndex; ++thetaIndex)
         {
-            retv.push_back(fluxCalculator.Compute(theta));
+            retv[thetaIndex] = fluxCalculator.Compute(theta + thetaIndex * deltaTheta);
         }
 
         return retv;
@@ -180,7 +184,7 @@ vector<floatType> ComputeFraunhoferFarField1DFlux(std::string const& paramFile)
 {
     auto p = FromJson<FraunhoferFarField1D::Parameters>(paramFile);
 
-    printf("Calculating based on the following:\n%s\n", jsonHelper::GetJson(p).c_str());
+    printf("Calculating based on the following:\n%s", jsonHelper::GetJson(p).c_str());
 
     return (ComputeFlux(p));
 }
