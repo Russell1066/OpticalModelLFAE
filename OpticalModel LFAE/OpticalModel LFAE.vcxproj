@@ -126,6 +126,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,6 +145,7 @@
     <ClInclude Include="ConfigHelpers.h" />
     <ClInclude Include="DataType.h" />
     <ClInclude Include="FraunhoferFarField1D.h" />
+    <ClInclude Include="Integrals.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Matrix3x3.h" />
     <ClInclude Include="NearField_R00.h" />

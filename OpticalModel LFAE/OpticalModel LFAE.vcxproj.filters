@@ -63,6 +63,9 @@
     <ClInclude Include="FraunhoferFarField1D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Integrals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

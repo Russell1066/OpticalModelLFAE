@@ -1,6 +1,8 @@
 #pragma once
 
 #include <complex>
+#include <vector>
+
 #include "Vector3.h"
 
 typedef double floatType;
