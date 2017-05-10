@@ -55,14 +55,14 @@ namespace FraunhoferFarField1D
     private:
         floatType Compute(floatType theta) const
         {
-            auto sinTheta = sin(theta);
+			floatType a = 1;
+			floatType r = 3;
+			auto rho = k * r * sin(theta);
 
-            auto integral = Integrate<complexType>(minB, maxB, [&](floatType b) {
-                return exp(_i * k * b * sinTheta);
-            }, bDivisions);
+			auto flux = a * exp(_i * rho) * (2 * _j1(rho) / rho);
 
-            return std::norm(integral);
-        }
+			return std::norm(flux);
+		}
 
     private:
         floatType minB;
