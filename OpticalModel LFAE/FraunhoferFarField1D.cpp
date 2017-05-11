@@ -55,14 +55,14 @@ namespace FraunhoferFarField1D
     private:
         floatType Compute(floatType theta) const
         {
-			floatType a = 1;
-			floatType r = 3;
-			auto rho = k * r * sin(theta);
+            floatType a = 1;
+            floatType r = 3;
+            auto rho = k * r * sin(theta);
 
-			auto flux = a * exp(_i * rho) * (2 * _j1(rho) / rho);
+            auto flux = a * exp(_i * rho) * (2 * _j1(rho) / rho);
 
-			return std::norm(flux);
-		}
+            return std::norm(flux);
+        }
 
     private:
         floatType minB;
