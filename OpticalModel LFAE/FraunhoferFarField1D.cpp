@@ -23,8 +23,10 @@ namespace FraunhoferFarField1D
     public:
         FluxCalculator(Parameters const& params)
         {
+            a = params.a;
             minB = -params.b / 2;
             maxB = -minB;
+            radius = params.radius;
             bDivisions = params.bDivisions;
 
             k = 2 * M_PI / params.lambda;
@@ -55,9 +57,7 @@ namespace FraunhoferFarField1D
     private:
         floatType Compute(floatType theta) const
         {
-            floatType a = 1;
-            floatType r = 3;
-            auto rho = k * r * sin(theta);
+            auto rho = k * radius * sin(theta);
 
             auto flux = a * exp(_i * rho) * (2 * _j1(rho) / rho);
 
@@ -65,8 +65,10 @@ namespace FraunhoferFarField1D
         }
 
     private:
+        floatType a;
         floatType minB;
         floatType maxB;
+        floatType radius;
         int bDivisions;
 
         floatType k;

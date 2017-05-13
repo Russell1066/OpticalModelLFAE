@@ -16,12 +16,15 @@ namespace FraunhoferFarField1D
     static const int Default_thetaDivisions = 100;
     static const floatType Default_thetaMax = M_PI_4;
     static const int Default_bDivisions = 1000;
+    static const floatType Default_a = 1;
+    static const floatType Default_radius = 3;
 
     struct Parameters
     {
-
         floatType lambda;           // wavelength
+        floatType a;
         floatType b;                // bMin = -b
+        floatType radius;
         int bDivisions;             // deltaB = b / bDivisions
         floatType thetaMax;         // thetaMin = - thetaMax
         int thetaDivisions;         // deltaTheta = thetaMax * 2 / thetaDivisions
@@ -50,7 +53,9 @@ namespace FraunhoferFarField1D
     inline void from_json(const json& j, Parameters& p)
     {
         p.lambda = GetValueOrDefault(j, "lambda", Default_lambda);
+        p.a = GetValueOrDefault(j, "a", Default_a);
         p.b = GetValueOrDefault(j, "b", Default_b);
+        p.radius = GetValueOrDefault(j, "radius", Default_radius);
         p.thetaDivisions = GetValueOrDefault(j, "thetaDivisions", Default_thetaDivisions);
         p.thetaMax = GetValueOrDefault(j, "thetaMax", Default_thetaMax);
         p.bDivisions = GetValueOrDefault(j, "bDivisions", Default_bDivisions);
