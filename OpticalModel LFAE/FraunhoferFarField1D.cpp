@@ -23,11 +23,10 @@ namespace FraunhoferFarField1D
     public:
         FluxCalculator(Parameters const& params)
         {
-            a = params.a;
             minB = -params.b / 2;
             maxB = -minB;
-            radius = params.radius;
             bDivisions = params.bDivisions;
+            apertures = params.apertures;
 
             k = 2 * M_PI / params.lambda;
         }
@@ -57,19 +56,25 @@ namespace FraunhoferFarField1D
     private:
         floatType Compute(floatType theta) const
         {
-            auto rho = k * radius * sin(theta);
+            complexType flux = { 0,0 };
 
-            auto flux = a * exp(_i * rho) * (2 * _j1(rho) / rho);
+            // Sum for all aperatures
+            for (auto const& aperture : apertures)
+            {
+                auto rho = k * aperture.radius * sin(theta + aperture.deltaTheta);
+
+                flux += aperture.a * exp(_i * rho) * (2 * _j1(rho) / rho);
+            }
+
 
             return std::norm(flux);
         }
 
     private:
-        floatType a;
         floatType minB;
         floatType maxB;
-        floatType radius;
         int bDivisions;
+        std::vector<Parameters::aperture> apertures;
 
         floatType k;
     };

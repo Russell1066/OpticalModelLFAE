@@ -1,9 +1,19 @@
 {
-  "a": 1,
-  "b": 100.0,
+  "apertures": [
+    {
+      "a": 1.0,
+      "deltaTheta": -0.15,
+      "radius": 3.0
+    },
+    {
+      "a": 1.0,
+      "deltaTheta": 0.15,
+      "radius": 3.0
+    }
+  ],
+  "b": 10.0,
   "bDivisions": 1000,
   "lambda": 1.0,
-  "radius": 3,
   "thetaDivisions": 1000,
   "thetaMax": 0.7
 }

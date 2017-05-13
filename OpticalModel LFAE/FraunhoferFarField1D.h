@@ -18,30 +18,54 @@ namespace FraunhoferFarField1D
     static const int Default_bDivisions = 1000;
     static const floatType Default_a = 1;
     static const floatType Default_radius = 3;
+    static const floatType Default_deltaTheta = 0;
 
     struct Parameters
     {
+        struct aperture
+        {
+            floatType a;
+            floatType radius;
+            floatType deltaTheta;
+        };
+
         floatType lambda;           // wavelength
-        floatType a;
         floatType b;                // bMin = -b
-        floatType radius;
         int bDivisions;             // deltaB = b / bDivisions
         floatType thetaMax;         // thetaMin = - thetaMax
         int thetaDivisions;         // deltaTheta = thetaMax * 2 / thetaDivisions
+        std::vector<aperture> apertures;
 
         Parameters() :
             lambda(Default_lambda),
             b(Default_b),
             bDivisions(Default_bDivisions),
             thetaMax(Default_thetaMax),
-            thetaDivisions(Default_thetaDivisions)
+            thetaDivisions(Default_thetaDivisions),
+            apertures{ { Default_a, Default_radius, Default_deltaTheta } }
         {
         }
     };
 
+    inline void to_json(json& j, const Parameters::aperture& a) {
+        j = json
+        {
+            { "a", a.a },
+            { "radius", a.radius },
+            { "deltaTheta", a.deltaTheta },
+        };
+    }
+
+    inline void from_json(const json& j, Parameters::aperture& a) {
+        a.a = GetValueOrDefault(j, "a", Default_a);
+        a.radius = GetValueOrDefault(j, "radius", Default_radius);
+        a.deltaTheta = GetValueOrDefault(j, "deltaTheta", Default_deltaTheta);
+    }
+
     inline void to_json(json& j, const Parameters& p) {
         j = json
         {
+            { "apertures", p.apertures },
             { "lambda", p.lambda },
             { "b", p.b },
             { "thetaDivisions", p.thetaDivisions },
@@ -53,9 +77,8 @@ namespace FraunhoferFarField1D
     inline void from_json(const json& j, Parameters& p)
     {
         p.lambda = GetValueOrDefault(j, "lambda", Default_lambda);
-        p.a = GetValueOrDefault(j, "a", Default_a);
+        p.apertures = GetValueOrDefault(j, "apertures", std::vector<Parameters::aperture>{ { Default_a, Default_radius, Default_deltaTheta } });
         p.b = GetValueOrDefault(j, "b", Default_b);
-        p.radius = GetValueOrDefault(j, "radius", Default_radius);
         p.thetaDivisions = GetValueOrDefault(j, "thetaDivisions", Default_thetaDivisions);
         p.thetaMax = GetValueOrDefault(j, "thetaMax", Default_thetaMax);
         p.bDivisions = GetValueOrDefault(j, "bDivisions", Default_bDivisions);
@@ -64,6 +87,18 @@ namespace FraunhoferFarField1D
     inline void ValidateParameters(Parameters const& params)
     {
         std::vector<std::string> errors;
+        assert(params.apertures.size() > 0);
+        if (params.apertures.size() < 1)
+        {
+            errors.push_back("Must have at least one aperature");
+        }
+
+        for (auto aperture : params.apertures)
+        {
+            assert(aperture.radius > 0);
+            errors.push_back("all radii must be greater than zero");
+        }
+
         assert(params.thetaDivisions > 0);
         if (params.thetaDivisions <= 0)
         {
@@ -96,7 +131,7 @@ namespace FraunhoferFarField1D
 
     inline Parameters LoadParameters(std::string const& paramFile, bool printParams = false)
     {
-        auto p =  FromJson<FraunhoferFarField1D::Parameters>(paramFile);
+        auto p = FromJson<FraunhoferFarField1D::Parameters>(paramFile);
 
         if (printParams)
         {
